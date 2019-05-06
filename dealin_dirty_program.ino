@@ -1944,12 +1944,12 @@ int how_many_to_exchange(int playerNum) {
       lcd.print("     NEW CARDS     ");
       key = keypad.getKey();
       
-        if (key == '#' || key == '*'  || key == '6' || key == '9'  || key == '8'  || key == '7') {              // these are all the situations where we return an error message
+        if (key == '#' || key == '*'  || key == '6' || key == '9'  || key == '8'  || key == '7' || key == '4' || key == '5') {              // these are all the situations where we return an error message
           shift3 = 1;
       }
       
       
-        else if (key == '1' || key == '2' || key == '3' || key == '4' || key == '5' || key == '0') {
+        else if (key == '1' || key == '2' || key == '3' || key == '0') {
           shift3 = 2;
         }
       }
@@ -1961,7 +1961,7 @@ int how_many_to_exchange(int playerNum) {
         lcd.setCursor(0,0);
         lcd.print("   SELECT A NUMBER  "); 
         lcd.setCursor(0,1);
-        lcd.print("  BETWEEN 0 AND 5!  ");
+        lcd.print("  BETWEEN 0 AND 3!  ");
         delay(1000);
         lcd.clear();
         key = reset;      
