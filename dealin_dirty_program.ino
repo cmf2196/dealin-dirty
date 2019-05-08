@@ -160,7 +160,7 @@ volatile long counter = 0;   // this will change in the background
 
 
 int topSpeed = 255;  // 255 is the maximum speed
-int lowSpeed = 175; // play around with this number
+int lowSpeed = 130; // play around with this number
 float distance = 3.2;   // How far in inches do you want to travel
 int baseSpeed = 160;         // base speed
 int homeSpeed = 140;         // homing speed for the base
@@ -869,9 +869,12 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
   int playerCard1[numPlayers] = {0};               // initialize array of player first card
   int playerCard2[numPlayers] = {0};               // initialize array of player second card   
   int playerScores[numPlayers] = {0};              // initialize array of player scores 
+  String playerCard1Str[numPlayers] = {"0"};
+  String playerCard2Str[numPlayers] = {"0"};
   int playerSplitScores[numPlayers] = {0};          // scores for second hand if the player splits
   int dealerScore = 0;                             // initialize score of dealer
   int dealerCard1 = 0;                             // initialize dealer's first card
+  int dealerCard2 = 0;
 
   String card;                                     // card place holder (will change) 
   int cardValue;                                   // card value place holder (will change)
@@ -889,9 +892,8 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
   currScore = playerScores[0] + cardValue;          // update the player's score
   playerScores[0] = currScore;
   playerCard1[0] = cardValue;                       // update player's first card
-  Serial.println("player round 1");
-  Serial.println(1);
-  Serial.println(currScore);
+  playerCard1Str[0] = card;
+
   
 
   for (int j = 0; j<=1 ; j++){
@@ -904,9 +906,8 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
         currScore = playerScores[i] + cardValue;          // update the player's score
         playerScores[i] = currScore;
         playerCard1[i] = cardValue;                       // update player's first card
-        Serial.println("player round 1");
-        Serial.println(currPlayerNumber);
-        Serial.println(currScore);
+        playerCard1Str[i] = card;
+
         
        }
       moveBase(true , lastPlayerToDealer , baseSpeed );    // move to dealer
@@ -914,33 +915,37 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
       cardValue = blackJackGetCard(card);                   // get card Value
       dealerScore = dealerScore + cardValue;                // update dealer's score
       dealerCard1 = dealerCard1 + cardValue;                // update the dealer's first card
+      
+
       moveBase(true, dealerToFirst  , baseSpeed );         // move to first player
     }
     
     else{                                                 // this is the second round
-      for (int p=1; p<=num; p++){
+      for (int p=0; p<num; p++){
         int currPlayerNumber = p +1;
         card = dealCard(topSpeed);                        // Deal a Card close to the player
         cardValue = blackJackGetCard(card);               // get card Value
         currScore = playerScores[p] + cardValue;          // update the player's score
         playerScores[p] = currScore;
         playerCard2[p] = cardValue;                       // update player's second card
+        playerCard2Str[p] = card;
         moveBase(false , turn , baseSpeed ); 
-        
+
+        }
     card = dealCard(topSpeed);                            // Deal a Card close to the last player
     cardValue = blackJackGetCard(card);                   // get card Value
     currScore = playerScores[num] + cardValue;            // update the player's score
-    Serial.println("player Second Round");
-    Serial.println(currPlayerNumber);
-    Serial.println(currScore);
+
     playerScores[num] = currScore;
     playerCard2[num] = cardValue;                         // update player's second card
-    }
+    playerCard2Str[num] = card;
+    
     moveBase(true , lastPlayerToDealer , baseSpeed );         // move to Dealer
     slideTop(true);
     card = dealCard(lowSpeed);                                 // deal a card close to dealer
     cardValue = blackJackGetCard(card);                        // get card Value
     dealerScore = dealerScore + cardValue;                     // update dealer's score
+    dealerCard2 = dealerCard2 + cardValue;                // update the dealer's first card    
     moveBase(true , dealerToFirst , baseSpeed );              // move to first player
     slideTop(false);                                          // face up the rest of the game
     }
@@ -949,23 +954,70 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
 ////// GAME PLAY ////////
 
 // check to see if the dealer should offer an insurance
-  if (dealerCard1 == 10 || dealerCard1 == 11) {
+  if (dealerCard1 == 11) {
     insurance();                                               // wait for players to make insurance bets
+
+  }
     if (dealerScore == 21) {                                   // the dealer has blackJack
        dealerBlackJack();  
-       gameFinished = true;                                    // have a more robust game over screen for blackJack _________________________________________ work to be done _________________
+       gameFinished = true;                                   
        return gameFinished;
-    }
-  }
+    }  
 
   int currPosition = 1;                                   // need some positional awareness
+// need a loop that will check ahead of time whether or not the player will split
+// it also needs to get the number of acs
+int splits[numPlayers] = {0}; 
+int numAces[numPlayers] = {0};
+  for (int l = 0; l < numPlayers; l ++ ) {
+    int playerNum = l + 1;                                // need the acutal player number
+    int card1 = playerCard1[l];                         // get player information
+    int card2 = playerCard2[l];
+    int score = playerScores[l];
+    String card1Str = playerCard1Str[l];
+    String card2Str = playerCard2Str[l];
+    int playerAce = 0;
+    if (card1 == 11) {
+      playerAce = playerAce +1 ;
+    }
+    if (card2 == 11) {
+      playerAce = playerAce +1 ;
+    }
+    numAces[l] = playerAce;
+        
+        split = false;   // only will change if player decides to split
+        if (card1 == card2) {                                     // if the player can split 
+          if (card1 != 10) {
+      
+            splits[l] = 1;
+            
+          }        
+          else {
+            if (((card1Str.indexOf("1") > 0) && (card2Str.indexOf("1") > 0)) || ((card1Str.indexOf("K") > 0) && (card2Str.indexOf("K") > 0)) || ((card1Str.indexOf("Q") > 0) && (card2Str.indexOf("Q") > 0)) || ((card1Str.indexOf("J") > 0) && (card2Str.indexOf("J") > 0)) ){          
+            
+            splits[l] = 1;
+            
+            }
+            else {
+ 
+              continue;
+            }
+          }
+        }
+  }
 
+
+
+
+    
 // see which player wants to hit another card
   for (int k = 0; k < numPlayers; k ++ ) {
     int playerNum = k + 1;                                // need the acutal player number
     int card1 = playerCard1[k];                         // get player information
     int card2 = playerCard2[k];
     int score = playerScores[k];
+    String card1Str = playerCard1Str[k];
+    String card2Str = playerCard2Str[k];
   
     
     
@@ -974,36 +1026,71 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
           black_jack_display(playerNum);                // display screen .  ___________________________________________ put this during the deal __________________________________ . DONT NEED TO VISIT THIS PLAYER
           continue;
         }
+        int currPositionAngle = currPosition * turn + adjust;
+        int playerAngle = playerNum * turn + adjust;
+        int moveDiff = playerAngle - currPositionAngle ;
+
+         moveBase(false, moveDiff , baseSpeed);
+         currPosition = playerNum;       
      // does the player want a double   
         playerDouble = false;                                // will change if player decides to double 
         playerDouble = playerDoublePrompt(playerNum);            // ask if the player wants to double
         if (playerDouble == true) {
-          moveBase(false, turn * k , baseSpeed);                // move to player
+
           currPosition = playerNum;
-//          Serial.println("dealer Location");
-//          Serial.println(currPosition);
+
           card = dealCard(topSpeed);                               // player gets exactly one card
           cardValue = blackJackGetCard(card);                      // get card Value
           score = score + cardValue;                               // update player's score
+           int playerAcesDouble = numAces[k];
+          if (cardValue == 11) {
+            playerAcesDouble = playerAcesDouble + 1;
+            numAces[k] = playerAcesDouble;
+          }
+          if ((score > 21) && (numAces[k] != 0)) {
+            score = score - 10;
+          }
+   
           playerScores[k] = score; 
           continue;                             
         }
+        
         // see if player wants to split
-        split = false;                                       // only will change if player decides to split
-        if (card1 == card2) {                                     // if the player can split 
-          split = playerSplit(playerNum);                   
-        }
+        split = false;   // only will change if player decides to split
+        if (splits[k] ==1) {
+           split = playerSplit(playerNum); 
+          }        
+          else {
+            
+              split = false;
+            }
+          
+        
   
         if (split == true) {
-          int score1 = hit_stay_interaction(playerNum, score);
+          card = dealCard(topSpeed);
+          cardValue = blackJackGetCard(card);
+          int score1 = playerCard1[k] + cardValue;
+          int score2 = playerCard2[k];
+          if (playerCard1[k] != 11) {
+          score1 = hit_stay_interaction(playerNum, score1 , numAces[k]);
+          }
           playerScores[k] = score1;
-          moveBase(true , 8 , baseSpeed);
-          int score2 = hit_stay_interaction(playerNum, score); 
-          playerSplitScores[k] = score2;
+          // second split
           moveBase(false , 8 , baseSpeed);
+          String card2 = dealCard(topSpeed);
+          int cardValue2 = blackJackGetCard(card2);
+          score2 = score2 + cardValue2;
+          if (playerCard1[k] != 11) {
+          score2 = hit_stay_interaction(playerNum, score2 , numAces[k]);
+          }
+          playerSplitScores[k] = score2;
+          moveBase(true , 8 , baseSpeed);
         }
         else if (split == false) {
-            score = hit_stay_interaction(playerNum, score);
+
+   
+            score = hit_stay_interaction(playerNum, score , numAces[k]);
             playerScores[k] = score;
         }
 //        if (k < numPlayers - 1) {
@@ -1022,15 +1109,78 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
     int diff = currPositionAngle - 90 ;
     moveBase( true , diff , baseSpeed);
    }
+  flip_dealer_card();
+// if dealer's score is less than 17 
+  int dealerAces= 0;
+  if (dealerCard1 ==11 ) {
+    dealerAces = dealerAces + 1;    
+  }
+  if (dealerCard2 == 11) {
+    dealerAces = dealerAces + 1;
+  }
 
-// if dealer's score is less than 17   Still need to include variable Ace    
-  while (dealerScore < 17) {
+   int  numInGame = 0;
+   for (int n = 0; n < numPlayers; n++) { 
+      if ((playerScores[n] < 22) && (playerScores[n] != 0)) {
+        numInGame = numInGame + 1;
+      }
+      if ((playerSplitScores[n] < 22) && (playerSplitScores[n] !=0)) {
+        numInGame = numInGame + 1;
+      }
+   }
+
+  
+  while ((dealerScore < 17) &&  (numInGame != 0)) {
     card = dealCard(lowSpeed);                                 // deal card close to dealer
     cardValue = blackJackGetCard(card);                        // get card Value
     dealerScore = dealerScore + cardValue;                     // update dealer's score
+    if (cardValue == 11) {
+      dealerAces = dealerAces + 1;
+    }
+
+
+
+
+
+    
+    if (dealerScore >21)  {
+      if (dealerAces != 0) {
+        dealerScore = dealerScore - 10;
+        dealerAces = dealerAces - 1;
+      }
+    }
   }
 
   displayDealerScore(dealerScore);
+
+
+
+  int listOfWinners[numPlayers] = {0};
+
+  
+
+  for (int x = 0; x < numPlayers; x ++ ) {
+    int currPlayerNum = x + 1;
+      if ((playerScores[x] < 22) && (playerScores[x] > dealerScore) || (playerScores[x] < 22) && (dealerScore >= 22) ) {
+        listOfWinners[x] = currPlayerNum;
+      }
+      if ((playerSplitScores[x] < 22) && (playerSplitScores[x] > dealerScore)) {
+        listOfWinners[x] = currPlayerNum;
+      }    
+  }
+
+  int dealerWin = 0;
+  for (int z = 0; z < numPlayers; z ++ ) {
+    dealerWin = dealerWin + listOfWinners[z];
+  }
+
+  if ((dealerWin == 0 )&& (dealerScore <= 21)) {
+    casinoWarDealerWins();
+  }
+  else {
+    casinoWarWinners(listOfWinners , numPlayers * 2);
+  }
+
   
   gameFinished = true;
   lcd.clear();
@@ -1040,8 +1190,39 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
 
 // ______________________________________________________Helper functions______________________________________________________
 
-    
-int hit_stay_interaction(int player, int score ) {
+void flip_dealer_card() {
+  /*   
+ *    this function prompts the user to flip the dealer's card
+ *    it does not need to return anything
+ */
+   char key = NO_KEY;             
+  
+  while (key != '#') {
+ 
+    lcd.setCursor(0,0);
+    lcd.print("  FLIP DEALER'S  ");
+    lcd.setCursor(0,1);
+    lcd.print("       CARD       ");    
+    lcd.setCursor(0,3);
+    lcd.print("               # ->");  
+    key = keypad.getKey();             // we will be getting values from the keyPad
+  }
+  if (key == '#') {
+    lcd.clear();
+    return;
+  }
+
+}
+
+
+
+
+
+
+
+
+
+int hit_stay_interaction(int player, int score , int numAces ) {
 /*       
  * this function is a loop which continuously promots the player if they would like to hit or stay. 
  * it will break if the score exceeds 21
@@ -1050,6 +1231,12 @@ int hit_stay_interaction(int player, int score ) {
    bool hitStay;
    String card;
    int cardValue;
+  
+   if (score == 22) {
+    score = 12;
+    numAces = numAces - 1;
+   }
+
    while (moveOn == false) {
      hitStay = hit_or_stay(player);
      if (hitStay == 0) {
@@ -1057,16 +1244,28 @@ int hit_stay_interaction(int player, int score ) {
        return score;
      }
      else {
-       dealCard(topSpeed);
        card = dealCard(topSpeed);                               // player gets exactly one card
        cardValue = blackJackGetCard(card);                      // get card Value
        score = score + cardValue;                               // update player's score
+
+       if (cardValue == 11) {
+        numAces = numAces + 1; 
+       }
        if (score >= 22) {
+
+        if (numAces != 0)  {
+
+          score = score -10;
+          numAces = numAces - 1;
+          continue;
+        }
+        bust_display(player);
         return score;                                            // the player has busted
        }
      }  
    }
 }
+
 
 
 
@@ -1084,9 +1283,9 @@ int hit_or_stay(int player) {
     lcd.setCursor(0,0);
     lcd.print(playerLine); 
     lcd.setCursor(0,1);
-    lcd.print("     1) Hit     ");
+    lcd.print("1) Hit     ");
     lcd.setCursor(0,2);
-    lcd.print("     2) Stay    ");
+    lcd.print("2) Stay    ");
     char key = keypad.getKey();                      // we will be getting the value from the keypad
 
     if (key == '1') {
@@ -1109,7 +1308,7 @@ void insurance() {
  *    this function prompts the user's for an insurance
  *    it does not need to return anything
  */
-   char key;             
+   char key = NO_KEY;             
   
   while (key != '#') {
  
@@ -1134,13 +1333,13 @@ void dealerBlackJack() {
    * This is the Dealer's black Jack screen.
    */
 
-   char key;             
+     char key = NO_KEY;             
   
   while (key != '#') {                    // while loop waits for players to move forward    
     lcd.setCursor(0,0);
     lcd.print("  CARD DEALER 3000  ");
     lcd.setCursor(0,1);
-    lcd.print("HAS BLACKJACK!");
+    lcd.print("    HAS BLACKJACK!");
     lcd.setCursor(0,3);
     lcd.print("               # ->");  
     key = keypad.getKey();                // we will be getting values from the keyPad  
@@ -1160,7 +1359,7 @@ void displayDealerScore(int dealerScore) {
    * This is the Dealer's black Jack score.
    */
 
-  char key;             
+  char key = NO_KEY;             
   
   while (key != '#') {                    // while loop waits for players to move forward    
     lcd.setCursor(0,0);
@@ -1226,9 +1425,9 @@ bool playerSplit(int player) {
     lcd.setCursor(0,0);
     lcd.print(playerLine); 
     lcd.setCursor(0,1);
-    lcd.print("     1) Split     ");
+    lcd.print("1) Split     ");
     lcd.setCursor(0,2);
-    lcd.print("     2) Do Not Split    ");
+    lcd.print("2) Do Not Split    ");
     char key = keypad.getKey();                      // we will be getting the value from the keypad
 
     if (key == '1') {
@@ -1889,6 +2088,38 @@ String get_line(int playerNum){
 }
   
 
+void bust_display(int player) {
+/*
+ */
+  
+     String playerLine = get_line(player);
+
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("        BUST!     ");
+
+      delay(500);
+      lcd.clear();
+
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("        BUST!     ");
+
+      delay(500);
+      lcd.clear();
+
+      
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("        BUST!     ");
+
+      delay(1000);
+      lcd.clear();
+}
+
 
 void black_jack_display(int player) {
 /*
@@ -2265,7 +2496,7 @@ void homing(){
   }
 
   digitalWrite(dirPinSlide,LOW);
-  for(int x = 0; x < 10; x++) {
+  for(int x = 0; x < 15; x++) {
     digitalWrite(stepPinSlide,HIGH); 
     delayMicroseconds(8000); 
     digitalWrite(stepPinSlide,LOW); 
@@ -2371,7 +2602,9 @@ continue;
     if (buffer1[i] != 32)
     {
       char card = (char) buffer1[i];
-      cardVal += card;
+      if (card !=""); {
+        cardVal += card;
+      }
     }
   }
   newCard = cardVal;
