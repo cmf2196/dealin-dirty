@@ -1,3 +1,11 @@
+/*
+ * Author: Dealin' Dirty: Columbia University Senior Design Group 13, Class of 2019
+ * This program runs the Card Dealer 300, automatic card dealer and interactive gaming systemn
+ * Five games are encorperated into the device
+ */
+
+
+
 
 // _____________________________________________Library Packages_____________________________________________________________
 #include "Wire.h"
@@ -5,148 +13,6 @@
 #include "Keypad.h"
 #include <Stepper.h>
 
-//_______________________________________________Wiring Diagram______________________________________________________________
-
- 
-/*  Final Wiring
-
-// stepper updatesssssssssss . 
-// initialize pins for card pusher stepper motor 
-const int stepPinPush = 28; 
-const int dirPinPush = 29; 
-const int enPinPush = 30;
-
-// initialize pins for card picker stepper motor 
-const int stepPinPick = 22; 
-const int dirPinPick = 23; 
-const int enPinPick = 24;
-
-// initialize pins for Slide stepper motor 
-const int stepPinSlide = 25; 
-const int dirPinSlide = 26; 
-const int enPinSlide = 27;
-
-// updatessssssss
-
-
-Picker stepper motor :
-green = A+
-black = A-
-blue = B+
-red = B-
-ENA - , DIR - , PUL - to arduino ground
-GRN , VCC to power supply (12V 2A)
-PUL + to 22
-DIR + to 24
-ENA + to 26
-
-
-gear stepper motor :
-green A+
-black = A-
-blue = B+
-red = B-
-ENA - , DIR - , PUL - to arduino ground
-GRN , VCC to power supply (12V 2A)
-PUL + to 23
-DIR + to 25
-ENA + to 27
-
-
-End Stop for gear motor:
-red - 5V
-black - Ground
-green - 4
-
-End stop of base rotation:
-red - 5V
-black - Ground
-green - 13
-
-RFID:
-grey - 3V on arduino
-purple - 8
-blue - ground
-black - NOTHING (don’t use)
-green - 50
-yellow - 51
-white - 52
-red - 9
-
-Keypad:
-from 1-7 as seen from left to right on the top face of the keypad
-1 green - 41                            39       
-2 red - 39                              37
-3 white to resistor to 37               35
-4 yellow - 49                           47
-5 black to resistor to 43               41
-6 blue to resistor to 47                 45
-7 grey to resistor to 45                43
-
-
-
-Base DC motor and Encoder:
-(encoder)
-green to ground
-blue to 3.3 V
-white to 3
-yellow to 2 
-
-(motor) - motor Driver 4
-Motor Driver    arduino 
-10 in3            D12
-11 in4            D11
-12 pwm            D10
-5                ground
-
-Motor Driver    DC motor
-1 (A+)        A+ Red
-2 (A-)        A- Black
-
-motor Driver    Power Supply
-4             12V
-5             ground
-
-remove jumper from  7
-
-
-
-Shooter DC motor: Motor Driver 4
-Motor Driver    arduino 
-9 in1            D7
-8 in2            D6
-7 pwm            D5
-5                ground
-
-Motor Driver    DC motor
-13 (B+)        A+ Red
-14 (B-)        A- Black
-
-motor Driver    Power Supply
-4             12V
-5             ground
-
-remove jumper from  7
-Push Stepper motor:
-red stepper into 1
-yellow stepper into 2
-grey stepper into 13
-green stepper in 14
-12V power into red and ground
-ground motor driver (5) jump with ground into arduino
-8 red - 28
-9 orange - 30
-10 yellow - 32
-11 green - 34
-
-
-LCD Board
-5V (red) to Arduino 5V pin
-GND (white) to Arduino GND pin
-CLK (yellow) to 21 for mega
-DAT (green) to 20 for mega
-
- */
 
 //_______________________________________________Global Variables______________________________________________________________
 int numStepsPush = 200;   // The number of steps is specific to your motor
@@ -951,7 +817,31 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
     }
   }
 
-////// GAME PLAY ////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+////// GAME PLAY Set up ////////
 
 // check to see if the dealer should offer an insurance
   if (dealerCard1 == 11) {
@@ -965,6 +855,7 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
     }  
 
   int currPosition = 1;                                   // need some positional awareness
+  
 // need a loop that will check ahead of time whether or not the player will split
 // it also needs to get the number of acs
 int splits[numPlayers] = {0}; 
@@ -1008,7 +899,7 @@ int numAces[numPlayers] = {0};
 
 
 
-
+// Game Play ////
     
 // see which player wants to hit another card
   for (int k = 0; k < numPlayers; k ++ ) {
@@ -1023,7 +914,7 @@ int numAces[numPlayers] = {0};
     
     // is there a blackJack  
        if (score == 21) {                             // black Jack!
-          black_jack_display(playerNum);                // display screen .  ___________________________________________ put this during the deal __________________________________ . DONT NEED TO VISIT THIS PLAYER
+          black_jack_display(playerNum);                // display screen . 
           continue;
         }
         int currPositionAngle = currPosition * turn + adjust;
@@ -1032,35 +923,14 @@ int numAces[numPlayers] = {0};
 
          moveBase(false, moveDiff , baseSpeed);
          currPosition = playerNum;       
-     // does the player want a double   
-        playerDouble = false;                                // will change if player decides to double 
-        playerDouble = playerDoublePrompt(playerNum);            // ask if the player wants to double
-        if (playerDouble == true) {
 
-          currPosition = playerNum;
-
-          card = dealCard(topSpeed);                               // player gets exactly one card
-          cardValue = blackJackGetCard(card);                      // get card Value
-          score = score + cardValue;                               // update player's score
-           int playerAcesDouble = numAces[k];
-          if (cardValue == 11) {
-            playerAcesDouble = playerAcesDouble + 1;
-            numAces[k] = playerAcesDouble;
-          }
-          if ((score > 21) && (numAces[k] != 0)) {
-            score = score - 10;
-          }
-   
-          playerScores[k] = score; 
-          continue;                             
-        }
         
         // see if player wants to split
         split = false;   // only will change if player decides to split
         if (splits[k] ==1) {
            split = playerSplit(playerNum); 
           }        
-          else {
+         else {
             
               split = false;
             }
@@ -1220,6 +1090,54 @@ void flip_dealer_card() {
 
 
 
+int hit_stay_double(int player , int score) {
+  /*
+ * this function will ask the player if he/she would like to hit or stay or doub;e
+ * it will return 0 1 or 2
+ */
+ bool answer = false;
+ int numCards;
+ String playerLine = get_line(player);
+ 
+ while (answer == false) {
+    lcd.setCursor(0,0);
+    lcd.print(playerLine); 
+    lcd.setCursor(18 , 0);
+    lcd.print(score);
+    lcd.setCursor(0,1);
+    lcd.print("1) Hit     ");
+    lcd.setCursor(0,2);
+    lcd.print("2) Stay    ");
+    lcd.setCursor(0,3);
+    lcd.print("3) Double    ");    
+    char key = keypad.getKey();                      // we will be getting the value from the keypad
+
+    if (key == '1') {
+      numCards = 1;
+      answer = true;
+    }
+    else if (key == '2') {
+      numCards = 0;
+      answer = true;
+    }
+
+    else if (key == '3') {
+      numCards = 3;
+      answer = true;
+    }
+
+ 
+ }
+ lcd.clear();
+ return numCards;
+
+}
+
+
+
+
+
+
 
 
 int hit_stay_interaction(int player, int score , int numAces ) {
@@ -1236,9 +1154,58 @@ int hit_stay_interaction(int player, int score , int numAces ) {
     score = 12;
     numAces = numAces - 1;
    }
+   
+   int choice = hit_stay_double(player, score);
+   if (choice ==3) {
+    card = dealCard(topSpeed);                               // player gets exactly one card
+    cardValue = blackJackGetCard(card);                      // get card Value
+    score = score + cardValue;                               // update player's score
+    int playerAcesDouble = numAces;
+    if (cardValue == 11) {
+    playerAcesDouble = playerAcesDouble + 1;
+    
+    }
+    if ((score > 21) && (playerAcesDouble != 0)) {
+    score = score - 10;
+    }
 
+    return score;                             
+   }
+
+
+  else if  (choice == 0) {
+       moveOn = true;
+       return score;
+   }
+
+   else{
+       card = dealCard(topSpeed);                               //non double deal the firs card
+       cardValue = blackJackGetCard(card);                      // get card Value
+       score = score + cardValue;                               // update player's score
+   
+          if (cardValue == 11) {
+        numAces = numAces + 1; 
+       }
+       if (score >= 22) {
+
+        if (numAces != 0)  {
+   
+          score = score -10;
+          numAces = numAces - 1;
+        }
+        else {
+          bust_display(player);
+          return score;                                            // the player has busted
+       }
+     
+   }
+
+   }
+
+  // this is non double
+  
    while (moveOn == false) {
-     hitStay = hit_or_stay(player);
+     hitStay = hit_or_stay(player , score);
      if (hitStay == 0) {
        moveOn = true;
        return score;
@@ -1254,7 +1221,7 @@ int hit_stay_interaction(int player, int score , int numAces ) {
        if (score >= 22) {
 
         if (numAces != 0)  {
-
+   
           score = score -10;
           numAces = numAces - 1;
           continue;
@@ -1264,13 +1231,17 @@ int hit_stay_interaction(int player, int score , int numAces ) {
        }
      }  
    }
+
+
+
+
+return score;
+
 }
 
 
 
-
-
-int hit_or_stay(int player) {
+int hit_or_stay(int player , int score) {
 /*
  * this function will ask the player if he/she would like to hit or stay
  * it will return 0 or 1
@@ -1282,6 +1253,8 @@ int hit_or_stay(int player) {
  while (answer == false) {
     lcd.setCursor(0,0);
     lcd.print(playerLine); 
+    lcd.setCursor(18 , 0);
+    lcd.print(score);
     lcd.setCursor(0,1);
     lcd.print("1) Hit     ");
     lcd.setCursor(0,2);
