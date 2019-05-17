@@ -12,12 +12,13 @@ Project Webpage:
               https://carddealer3000.weebly.com/
 
 Files Included: 
+              dealin_dirty_program.ino
               
-                
+              
 Model Generation Instructions:
 
-              This program is for use only on the Card Dealer 3000.  Please visit the project's webpage. 
-                
+This program is for use on the Card Dealer 3000. Please visit the project's webpage.
+              
 Credits:  
 
 This is a senior design project for the Mechanical Engineering Department at Columbia University.
