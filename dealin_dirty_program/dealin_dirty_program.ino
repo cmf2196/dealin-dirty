@@ -6,8 +6,6 @@
 
 
 
-
-
 // _____________________________________________Library Packages_____________________________________________________________
 #include "Wire.h"
 #include "Adafruit_LiquidCrystal.h"
@@ -124,8 +122,8 @@ void setup() {
   Serial.begin(115200); 
   
 // Set up for RFID
-  SPI.begin();                                                  // Init SPI bus
-  mfrc522.PCD_Init();                                              // Init MFRC522 card  
+  SPI.begin();                          // Init SPI bus
+  mfrc522.PCD_Init();                   // Init MFRC522 card  
 // initialize endstop pins
   pinMode(endStopTop , INPUT);
 
@@ -176,11 +174,8 @@ void setup() {
 
 // start with key set to No_KEY
   char key = NO_KEY;  
-
-
-
-
 }
+
 //_______________________________________________Void Loop ___________________________________________________________________
 
 void loop() {
@@ -276,13 +271,14 @@ void loop() {
 
 //_______________________________________________LCD Screen Functions___________________________________________________________________
 
-// starting screen.  This takes in nothing, but will return the number of players 
+s 
 int startScreen() {
+  /*
+   * this function displays the starting screen for the Card Dealer 3000
+   * it waits until the user selects any key, then the program begins
+   * the start of the device is initiated with the return of the integer, 1.
+   */
   char key = NO_KEY;      // this indicates that the key will be selected from the keypad
-
-
- 
-  
   
 while ( key == NO_KEY) {            // while no key has been selected, present the opening screen
   lcd.setCursor(0,0);
@@ -294,14 +290,19 @@ while ( key == NO_KEY) {            // while no key has been selected, present t
   key = keypad.getKey();  
        
 }
-  lcd.clear();                    // . clear the screen and set the key variable to something not on the keypad
-
-                   // . clear the screen and set the key variable to something not on the keypad
+  lcd.clear();      // clear the screen and set the key variable to something not on the keypad
+                   // clear the screen and set the key variable to something not on the keypad
     return 1;
 }
 
 
+
 int getPlayers() {
+  /*
+   * this function gets the number of players which will be playing for the session 
+   * because our device is only built to support 6 players on a table facing the dealer, 
+   * this function will not allow for keypad entry values other than integrers between 1, 6
+   */
   
   int numPlayers = 0;              //  initialize the number of players to be zero  
   int shift2 = 0;            // this will be used to toggle
@@ -330,10 +331,8 @@ int getPlayers() {
       }
     }
     
-
-    
-    
-    else if (shift2 == 1) {              // these are all the situations where we return an error message
+    else if (shift2 == 1) {     
+    //Error Message
       lcd.clear();
       lcd.setCursor(0,0);
       lcd.print("   SELECT A NUMBER  "); 
@@ -356,9 +355,14 @@ return numPlayers;
 }
 
 
-// Game Select. This will initiate after the number of players has been indicated
-
 char selectGame() {   
+
+  /*
+   * this function is used to select the game chosen by the user
+   * the function allows for the user to toggle between screens
+   * the function can be added to in order to add as many games (up to 9 due to keypad
+   * limitations)
+   */
       
 int shift = 0;            // this will be used to toggle
 bool gameSel = false;      // This will be used to terminate this function
@@ -419,7 +423,7 @@ while ((gameSel== false)  ) {               // when a game has not been selected
         for( int i=0; i< numberOfGames; i++)      // at any time, a player can select their game (even if it isn't showing on their screen)
           if ( gameOptions[i] == key){
             lcd.clear();
-            gameSel = true;                       // terminates the while loop
+            gameSel = true;                       // terminates the while loop  (note: in later functions, I switched to using break functions)
             
           
     }
@@ -432,9 +436,13 @@ while ((gameSel== false)  ) {               // when a game has not been selected
 }
 
 
-/////// Code for the closing screen interface /////////
-
 char closingScreen(char number) {
+  /*  
+   *   this function is for the closing screen interfface
+   *   it displays two options to the user:
+   *      1. restart the game with the same settings
+   *      2. go to the home screen.
+   */
   char key = keypad.getKey();
   
   while ((key != '*') && (key != '#')) {
@@ -459,18 +467,17 @@ char closingScreen(char number) {
 
 }
 
-//_______________________________________________Confirm Screen Functions___________________________________________________________________
-////  Programs Used to doubkle check User's Game Choice
-
 char checkGame(char number) {
 /*   
  *    this function confirms the game selection
  *    it takes in the char which was selected for the game during the game select screen
- *    it either returns '0' to return to the previous games or the char that was brought in
+ *    it either returns '0' to return to the select game screens or the char that was brought in
  */
+ 
   String gameTitle;
   char key;
- 
+
+ // This is a series of if statements, which indicate the string to be printed on the lcd board
   if (number == '1') {
     gameTitle = "   TEXAS HOLD'EM";
   }
@@ -486,8 +493,9 @@ char checkGame(char number) {
   else if ( number == '5') {
     gameTitle = "      GO FISH";
   }
-  while ((key != '*') && (key != '#')) {
- 
+  
+  while ((key != '*') && (key != '#')) {    // prints the confirm screen on lcd board
+    
     lcd.setCursor(0,0);
     lcd.print(gameTitle);
     lcd.setCursor(0,1);
@@ -497,16 +505,15 @@ char checkGame(char number) {
     key = keypad.getKey();
   }
 
-  if (key == '*') {
+  if (key == '*') {                         // returns user to game select
     lcd.clear();
     return '0';
       }
-  else if (key == '#') {
+  else if (key == '#') {                    // continues with game
     lcd.clear();
     return number;
   }
 }
-
 
 
 
@@ -517,6 +524,12 @@ char checkGame(char number) {
 //________________________________Texas Holdem___________________________________
 
 bool texasHoldem(int numPlayers) {    
+  /*
+   * this function performs texas holdem
+   * The device follows standard game play
+   * With the number of players as an input, this game evenly distributes the cards on the table
+   */
+
   
   bool gameFinished = false;      // this will terminate the game
   char key = NO_KEY;     // we will be getting keys from the keypad
@@ -706,7 +719,10 @@ while ( betNumber ==4) {            // wait for the players to finishing betting
   return gameFinished;        
 }
 
-// _______________________________________________________________________________________Black Jack___________________________________________________________________________________________
+
+
+// _____________________________________________________________________Black Jack______________________________________
+
 //________________________________Game______________________________________________________________
 
 bool blackJack(int numPlayers) {              // Thjs requires RFID
@@ -819,29 +835,6 @@ bool blackJack(int numPlayers) {              // Thjs requires RFID
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
 ////// GAME PLAY Set up ////////
 
 // check to see if the dealer should offer an insurance
@@ -937,8 +930,12 @@ int numAces[numPlayers] = {0};
             }
           
         
-  
-        if (split == true) {
+        /*
+         * when a player wants to split, they make two piles
+         * the delaer then needs to deal a card to the first pile, and gameplay continues
+         * the dealer then does the same to the second pile.
+         */
+        if (split == true) {                                  
           card = dealCard(topSpeed);
           cardValue = blackJackGetCard(card);
           int score1 = playerCard1[k] + cardValue;
@@ -1008,11 +1005,6 @@ int numAces[numPlayers] = {0};
     if (cardValue == 11) {
       dealerAces = dealerAces + 1;
     }
-
-
-
-
-
     
     if (dealerScore >21)  {
       if (dealerAces != 0) {
@@ -1024,11 +1016,7 @@ int numAces[numPlayers] = {0};
 
   displayDealerScore(dealerScore);
 
-
-
   int listOfWinners[numPlayers] = {0};
-
-  
 
   for (int x = 0; x < numPlayers; x ++ ) {
     int currPlayerNum = x + 1;
@@ -1061,6 +1049,79 @@ int numAces[numPlayers] = {0};
 
 // ______________________________________________________Helper functions______________________________________________________
 
+
+
+void bust_display(int player) {
+/*
+ * This function will provide a blinking screen that reads bust
+ * this is displayed to a player when their score exceeds 21
+ */
+  
+     String playerLine = get_line(player);
+
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("        BUST!     ");
+
+      delay(500);
+      lcd.clear();
+
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("        BUST!     ");
+
+      delay(500);
+      lcd.clear();
+
+      
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("        BUST!     ");
+
+      delay(1000);
+      lcd.clear();
+}
+
+
+void black_jack_display(int player) {
+/*
+ * This function will provide a blinking screen that reads Black Jack
+ * this is displayed to a player when they are dealt 21 points on the origional hand 
+ */
+  
+     String playerLine = get_line(player);
+
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("    BLACK JACK!     ");
+
+      delay(500);
+      lcd.clear();
+
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("    BLACK JACK!     ");
+
+      delay(500);
+      lcd.clear();
+
+      
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,2);
+      lcd.print("    BLACK JACK!     ");
+
+      delay(1000);
+      lcd.clear();
+}
+
+
+
 void flip_dealer_card() {
   /*   
  *    this function prompts the user to flip the dealer's card
@@ -1084,12 +1145,6 @@ void flip_dealer_card() {
   }
 
 }
-
-
-
-
-
-
 
 int hit_stay_double(int player , int score) {
   /*
@@ -1133,11 +1188,6 @@ int hit_stay_double(int player , int score) {
  return numCards;
 
 }
-
-
-
-
-
 
 
 
@@ -1232,8 +1282,6 @@ int hit_stay_interaction(int player, int score , int numAces ) {
        }
      }  
    }
-
-
 
 
 return score;
@@ -1458,18 +1506,18 @@ bool casinoWar(int numPlayers) {                // this requires RFID
   moveBase(false , adjust , baseSpeed );             // move to first player
   slideTop(false);                      // cards are face up
   card = dealCard(topSpeed);                 // Deal a Card close to the player
-  cardVal = casinoWarGetCard(card);             // this needs to be integrated into dealCard .   _____________________ CHANGE HERE ____________________
+  cardVal = casinoWarGetCard(card);             
   playerCards[0] = cardVal;
   for (int i=1; i<=num; i++){
     moveBase(false , turn  , baseSpeed );                            // move to the next player
     card = dealCard(topSpeed);                 // Deal a Card close to the player
-    cardVal = casinoWarGetCard(card);             // this needs to be integrated into dealCard .   _____________________ CHANGE HERE ____________________
+    cardVal = casinoWarGetCard(card);               
     playerCards[i] = cardVal;
   }
   moveBase(true , lastPlayerToDealer , baseSpeed );    // move to dealer
   
      dealerCard = dealCard(lowSpeed);             
-     dealerCardVal = casinoWarGetCard(dealerCard);             // this needs to be integrated into dealCard .   _____________________ CHANGE HERE ____________________  
+     dealerCardVal = casinoWarGetCard(dealerCard);           
      moveBase(true, burnToDealer  , baseSpeed );         // move to burn pile
 
 
@@ -1490,6 +1538,7 @@ bool casinoWar(int numPlayers) {                // this requires RFID
       listOfWinners[i] = playerNumber;
      }
   }
+  
 // STEP 2: ASK EACH TIED PLAYER IF THEY WANT A MATH OR SURRENDER, THEN DEAL
 
 // need a while loop for sequential ties. 
@@ -1610,10 +1659,7 @@ Serial.println(playersInWar);
 }
 
 
-
-
-
-
+// _______________ Helper Functions _________________
 
 bool casinoWarTie(int playerNumber) {
 /* 
@@ -1693,12 +1739,6 @@ void casinoWarDealerWins() {
   }
 
 }
-
-
-
-
-
-
 
 
 
@@ -1842,6 +1882,68 @@ while ( betNumber ==1) {            // wait for the players to finishing betting
   return gameFinished;
 
   }
+
+// _____________Five Card Draw: Helper functions ________
+
+  
+int how_many_to_exchange(int playerNum) {
+/*
+ * this is a function specific to five_card_draw
+ * it is designed to retrieve the number of cards a player would like to get
+ */
+  int numCards = 0;  // set to zero for now
+  int shift3 = 0;    // flip screens
+  String playerLine = get_line(playerNum);
+  char key = keypad.getKey();                      // we will be getting the value from the keypad
+  while (numCards == 0) {          //   This loop will get the number of players    
+       
+      if (shift3 == 0 ) {                        // prompt the user 
+      lcd.setCursor(0,0);
+      lcd.print(playerLine); 
+      lcd.setCursor(0,1);
+      lcd.print("  SELECT NUMBER OF  ");
+      lcd.setCursor(0,2);
+      lcd.print("     NEW CARDS     ");
+      key = keypad.getKey();
+      
+        if (key == '#' || key == '*'  || key == '6' || key == '9'  || key == '8'  || key == '7' || key == '4' || key == '5') {              // these are all the situations where we return an error message
+          shift3 = 1;
+      }
+      
+      
+        else if (key == '1' || key == '2' || key == '3' || key == '0') {
+          shift3 = 2;
+        }
+      }
+  
+      
+      
+      else if (shift3 == 1) {              // these are all the situations where we return an error message
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("   SELECT A NUMBER  "); 
+        lcd.setCursor(0,1);
+        lcd.print("  BETWEEN 0 AND 3!  ");
+        delay(1000);
+        lcd.clear();
+        key = reset;      
+        shift3 = 0;
+      }
+      else if (shift3 == 2){                   //  return the number of players as an integer
+        String number = String(key);
+        lcd.clear();
+        numCards = number.toInt();
+        
+      }
+  }
+  Serial.println(numCards);
+  return numCards; 
+}
+
+
+
+
+
  
 //________________________________Go Fish___________________________________
 
@@ -1925,9 +2027,7 @@ bool go_fish(int numPlayers) {
         }                             
 
          
-      }
-
-      
+      } 
   
     }
   
@@ -1961,15 +2061,15 @@ void completeGoFish() {
 
 
 
-//________________________________Game Play Help Functions___________________________________  
+//________________________________ Go Fish: Helper Functions___________________________________  
 
+
+
+int fishCards(int numCardsLeft){
 /*
  * this is a function specific to go_fish
  * it is designed to retrieve the number of cards a player would like to get
  */
-
-int fishCards(int numCardsLeft){
-
   int numCards = 0;  // set to zero for now
   int shift4 = 0;            // this will be used to toggle
   char key = keypad.getKey();                      // we will be getting the value from the keypad
@@ -2033,7 +2133,7 @@ return numCards;
 }
 
 
-
+// _______________ Additional functions used in the games above __________
 
 String get_line(int playerNum){
 /*   
@@ -2062,133 +2162,17 @@ String get_line(int playerNum){
 }
   
 
-void bust_display(int player) {
-/*
- */
-  
-     String playerLine = get_line(player);
-
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,2);
-      lcd.print("        BUST!     ");
-
-      delay(500);
-      lcd.clear();
-
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,2);
-      lcd.print("        BUST!     ");
-
-      delay(500);
-      lcd.clear();
-
-      
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,2);
-      lcd.print("        BUST!     ");
-
-      delay(1000);
-      lcd.clear();
-}
-
-
-void black_jack_display(int player) {
-/*
- */
-  
-     String playerLine = get_line(player);
-
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,2);
-      lcd.print("    BLACK JACK!     ");
-
-      delay(500);
-      lcd.clear();
-
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,2);
-      lcd.print("    BLACK JACK!     ");
-
-      delay(500);
-      lcd.clear();
-
-      
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,2);
-      lcd.print("    BLACK JACK!     ");
-
-      delay(1000);
-      lcd.clear();
-}
-
-
-  
-int how_many_to_exchange(int playerNum) {
-/*
- * this is a function specific to five_card_draw
- * it is designed to retrieve the number of cards a player would like to get
- */
-  int numCards = 0;  // set to zero for now
-  int shift3 = 0;    // flip screens
-  String playerLine = get_line(playerNum);
-  char key = keypad.getKey();                      // we will be getting the value from the keypad
-  while (numCards == 0) {          //   This loop will get the number of players    
-       
-      if (shift3 == 0 ) {                        // prompt the user 
-      lcd.setCursor(0,0);
-      lcd.print(playerLine); 
-      lcd.setCursor(0,1);
-      lcd.print("  SELECT NUMBER OF  ");
-      lcd.setCursor(0,2);
-      lcd.print("     NEW CARDS     ");
-      key = keypad.getKey();
-      
-        if (key == '#' || key == '*'  || key == '6' || key == '9'  || key == '8'  || key == '7' || key == '4' || key == '5') {              // these are all the situations where we return an error message
-          shift3 = 1;
-      }
-      
-      
-        else if (key == '1' || key == '2' || key == '3' || key == '0') {
-          shift3 = 2;
-        }
-      }
-  
-      
-      
-      else if (shift3 == 1) {              // these are all the situations where we return an error message
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("   SELECT A NUMBER  "); 
-        lcd.setCursor(0,1);
-        lcd.print("  BETWEEN 0 AND 3!  ");
-        delay(1000);
-        lcd.clear();
-        key = reset;      
-        shift3 = 0;
-      }
-      else if (shift3 == 2){                   //  return the number of players as an integer
-        String number = String(key);
-        lcd.clear();
-        numCards = number.toInt();
-        
-      }
-  }
-  Serial.println(numCards);
-  return numCards; 
-}
-
 
 
 //_______________________________________________Motor Control Functions___________________________________________________________________
   
 
 bool testStart() {
+  /*
+   * this function is not used during gameplay
+   * it was useful in the testing phase of the card dealer 3000
+   */
+  
   char key = keypad.getKey();
   
   while ((key != '*') && (key != '#')) {
@@ -2218,6 +2202,11 @@ bool testStart() {
 }
 
 bool testStart2() {
+   /*
+   * this function is not used during gameplay
+   * it was useful in the testing phase of the card dealer 3000
+   */
+   
   char key = keypad.getKey();
   
   while ((key != '*') && (key != '#')) {
@@ -2249,6 +2238,14 @@ bool testStart2() {
 
 
 void failed_card() {
+  /*
+   * the RFID reader we use is a cheap card
+   * for this reason there are a number of malfunctions which could occur
+   * in the even that the reader does not read the card, the program detects the error 
+   * and prompts the user to replace the jammed card
+   */
+
+  
     char key = NO_KEY;
   
   while (key != '#') {
@@ -2461,7 +2458,9 @@ void homing(){
     char key = keypad.getKey();
 
 // home the top of the device    
+
   while (digitalRead(endStopTop) == 1) {
+    // first move until the dealer hits the end stop
     
     digitalWrite(stepPinSlide,HIGH); 
     delayMicroseconds(4000); 
@@ -2471,6 +2470,7 @@ void homing(){
 
   digitalWrite(dirPinSlide,LOW);
   for(int x = 0; x < 15; x++) {
+    // move slightly off of the end stop to conclude the home
     digitalWrite(stepPinSlide,HIGH); 
     delayMicroseconds(8000); 
     digitalWrite(stepPinSlide,LOW); 
@@ -2486,6 +2486,7 @@ void homing(){
   digitalWrite(in2 , LOW); 
 
   while (digitalRead(endStopBot) == 1) {
+    // move until the end stop is hit
     analogWrite(enA , homeSpeed);   
 
   }
@@ -2497,6 +2498,7 @@ void homing(){
   digitalWrite(in1 , LOW);
   digitalWrite(in2 , HIGH); 
   while (digitalRead(endStopBot) == 0) {
+    // move slightly off of the end stop to conclude the home
   analogWrite(enA , homeSpeed);  
 }
   analogWrite(enA , 0);      // this should brake the motor
@@ -2523,6 +2525,7 @@ String getCardVal() {
  * Each has the Card Value as "first name" and Suit as "last Name"
  * The Card and Suit Values are represented as Bytes. This code converts them to a string and returns it
  * using while loops, the program waits until a valid card is read, then returns the card value as a String.
+ * additional checks are incorperated so that the dealer can prompt an error message when a faulty read occurs
  */
 
 // Indication: Variables used in the program
@@ -2701,6 +2704,10 @@ int blackJackGetCard(String card ){
 
 //_______________________________________________interupt function___________________________________________________________________
 
+/*
+ * this interrupt function simply adds one to the counter in the background
+ * it is used to control the encoder and base motor
+ */
 void pin_A() {
   counter ++;
 }
