@@ -27,6 +27,3 @@ Thank you to Dr. Joshua Browne for guidance with this project.  Additional thank
 Additional Comments:
 There is a bug with regards to the user interface that does not impact game play. In blackjack, if a player decides to split, the interface will show an extra "1" on the winning players screen. This is likely an easy fix; however, the project is completed.
 
-
-
-TEST
