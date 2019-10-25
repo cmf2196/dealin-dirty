@@ -13,6 +13,7 @@ Project Webpage:
 
 Files Included: 
               dealin_dirty_program.ino
+              final_paper.pdf
               
               
 Model Generation Instructions:
