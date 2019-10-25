@@ -12,7 +12,8 @@ Project Webpage:
               https://carddealer3000.weebly.com/
 
 Files Included: 
-              dealin_dirty_program.ino                                                                                                       final_paper.pdf
+              dealin_dirty_program.ino , 
+              final_paper.pdf
               
               
 Model Generation Instructions:
