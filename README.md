@@ -18,8 +18,8 @@ Files Included:
               
 Model Generation Instructions:
 
-This program is for use on the Card Dealer 3000. Please visit the project's webpage.
-              
+This program is for use on the Card Dealer 3000. 
+
 Credits:  
 
 This is a senior design project for the Mechanical Engineering Department at Columbia University.
